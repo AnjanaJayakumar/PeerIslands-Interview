@@ -1,0 +1,38 @@
+{
+    "type": "SELECT",
+    "columns": [
+        "Categories.CategoryName",
+        "Categories.Description",
+        "Products.ProductName"
+    ],
+    "joiners": [
+        "AND"
+    ],
+    "table_name": "Categories",
+    "operations": [
+        {
+            "operator": "LIKE",
+            "fieldName": "Products.ProductName",
+            "fieldValue": [
+                "c%"
+            ]
+        },
+        {
+            "operator": "IN",
+            "fieldName": "Categories.CategoryName",
+            "fieldValue": [
+                "Beverages",
+                "Condiments"
+            ]
+        }
+    ],
+    "joinOperations": [
+        {
+            "joinType": "inner join",
+            "operator": "=",
+            "field1": "Categories.CategoryID",
+            "field2": "Products.ProductID",
+            "joinTableName": "Products"
+        }
+    ]
+}

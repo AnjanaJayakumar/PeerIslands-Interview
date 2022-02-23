@@ -1,0 +1,18 @@
+{
+    "type": "SELECT",
+    "columns": [
+        "*"
+    ],
+    "joiners": [],
+    "table_name": "iris",
+    "operations": [
+        {
+            "operator": "=",
+            "fieldName": "Species",
+            "fieldValue": [
+                "Iris-versicolor"
+            ]
+        }
+    ],
+    "joinOperations": []
+}

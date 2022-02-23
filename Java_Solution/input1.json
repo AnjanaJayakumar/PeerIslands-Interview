@@ -1,0 +1,10 @@
+{
+    "type": "SELECT",
+    "columns": [
+        "*"
+    ],
+    "joiners": [],
+    "table_name": "iris",
+    "operations": [],
+    "joinOperations": []
+}

@@ -1,0 +1,47 @@
+{
+    "type": "SELECT",
+    "columns": [
+        "Species",
+        "PetalWidthCm",
+        "PetalWidthCm * 2"
+    ],
+    "joiners": [
+        "AND",
+        "OR",
+        "AND"
+    ],
+    "table_name": "iris",
+    "operations": [
+        {
+            "operator": "=",
+            "fieldName": "Species",
+            "fieldValue": [
+                "Iris-versicolor"
+            ]
+        },
+        {
+            "operator": "BETWEEN",
+            "fieldName": "PetalWidthCm",
+            "fieldValue": [
+                1.3,
+                1.8
+            ]
+        },
+        {
+            "operator": "=",
+            "fieldName": "Species",
+            "fieldValue": [
+                "Iris-setosa"
+            ]
+        },
+        {
+            "operator": "IN",
+            "fieldName": "PetalLengthCm",
+            "fieldValue": [
+                1.4,
+                1.6
+            ]
+        }
+    ],
+    "joinOperations": []
+}
