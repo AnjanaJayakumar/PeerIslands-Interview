@@ -20,18 +20,18 @@ class QueryBuilder:
         self.logical_opns = ['AND', 'ALL', 'ANY', 'BETWEEN',
                              'EXISTS', 'IN', 'LIKE', 'NOT', 'OR', 'SOME', '']
 
-    def get_values(self) -> Tuple:
+    def get_values(self, json_file) -> Tuple:
         """Function to get the JSON values
 
         Returns:
             Tuple: values in the JSON
         """
-        joiners = self.json_file.get('joiners')
-        operations = self.json_file.get('operations')
-        columns = self.json_file.get('columns')
-        type = self.json_file.get('type')
-        table_name = self.json_file.get("table_name")
-        join_operations = self.json_file.get("joinOperations")
+        joiners = json_file.get('joiners')
+        operations = json_file.get('operations')
+        columns = json_file.get('columns')
+        type = json_file.get('type')
+        table_name = json_file.get("table_name")
+        join_operations = json_file.get("joinOperations")
         return joiners, operations, columns, type, table_name, join_operations
 
     def between_solver(self, field_name: str, field_value: List) -> str:
@@ -88,7 +88,7 @@ class QueryBuilder:
         query = f"{field_name} LIKE '{value}'"
         return query
 
-    def sql_builder(self) -> str:
+    def sql_builder(self, joiners, operations, columns, type, table_name, join_operations) -> str:
         """Main method to parse the JSON and return the final query
 
         Raises:
@@ -97,22 +97,19 @@ class QueryBuilder:
         Returns:
             str: final query after parsing the JSON
         """
-        # get the values
-        joiners, operations, columns, type, table_name, join_operations = self.get_values()
-
         if not operations:
             operations = []
         if not join_operations:
             join_operations = []
 
         # start the query
-        query = type
+        query = type + " "
 
         # go through the list of columns
         if columns and len(columns) > 0:
             for col_name in columns:
-                query += col_name + ','
-            query = query[:-1]    # remove the last comma
+                query += col_name + ', '
+            query = query[:-2]    # remove the last comma
 
         else:
             query += " * "
@@ -160,34 +157,45 @@ class QueryBuilder:
                 field_value = operation.get('fieldValue')
                 field_name = operation.get('fieldName')
 
-                # check if the operator is a comparison operator
-                if operator in self.comparison_opns:
-                    if isinstance(field_value, str):
-                        query += f" {field_name} {operator} '{field_value}'"
-                    else:
-                        query += f" {field_name} {operator} {field_value}"
+                # check if sub-query is present
+                if (isinstance(field_value[0], dict)):
+                    # get the values
+                    joiners_sub, operations_sub, columns_sub, type_sub, table_name_sub, join_operations_sub = self.get_values(
+                        field_value[0])
+                    sub_query = self.sql_builder(
+                        joiners_sub, operations_sub, columns_sub, type_sub, table_name_sub, join_operations_sub)
+                    query += f" {field_name} {operator} ({sub_query})"
+                else:
+                    # check if the operator is a comparison operator
+                    if operator in self.comparison_opns:
+                        if isinstance(field_value[0], str):
+                            query += f" {field_name} {operator} '{field_value[0]}'"
+                        else:
+                            query += f" {field_name} {operator} {field_value[0]}"
 
-                # check if the operator is a logical operator
-                elif isinstance(operator, str):
-                    operator = operator.upper()
-                    if operator in self.logical_opns:
-                        if operator == "BETWEEN":
-                            query += self.between_solver(field_name,
-                                                         field_value)
-                        elif operator == "IN":
-                            query += self.in_solver(field_name, field_value)
-                        elif operator == "LIKE":
-                            query += self.like_solver(field_name, field_value)
+                    # check if the operator is a logical operator
+                    elif isinstance(operator, str):
+                        operator = operator.upper()
+                        if operator in self.logical_opns:
+                            if operator == "BETWEEN":
+                                query += self.between_solver(field_name,
+                                                             field_value)
+                            elif operator == "IN":
+                                query += self.in_solver(field_name,
+                                                        field_value)
+                            elif operator == "LIKE":
+                                query += self.like_solver(field_name,
+                                                          field_value)
+                        else:
+                            raise ValueError
+
                     else:
                         raise ValueError
 
-                else:
-                    raise ValueError
-
-                # add the joiner between multiple operations
-                if ctr+1 < len(operations):
-                    query += f" {joiners[ctr]} "
-                    ctr += 1
+                    # add the joiner between multiple operations
+                    if ctr+1 < len(operations):
+                        query += f" {joiners[ctr]} "
+                        ctr += 1
 
             return query
 
@@ -215,7 +223,11 @@ try:
         json_file = json.load(file)
 
     query_builder = QueryBuilder(json_file=json_file)
-    query = query_builder.sql_builder()
+    # get the values
+    joiners, operations, columns, type, table_name, join_operations = query_builder.get_values(
+        json_file)
+    query = query_builder.sql_builder(
+        joiners, operations, columns, type, table_name, join_operations)
     print("\nSQL Query: \n", query)
 
 except ValueError as e:
