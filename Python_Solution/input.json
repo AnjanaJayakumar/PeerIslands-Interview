@@ -1,38 +1,46 @@
 {
     "type": "SELECT",
     "columns": [
-        "Categories.CategoryName",
-        "Categories.Description",
-        "Products.ProductName"
+        "student.studentid",
+        "student.name",
+        "marks.total_marks"
     ],
     "joiners": [
         "AND"
     ],
-    "table_name": "Categories",
-    "operations": [
-        {
-            "operator": "LIKE",
-            "fieldName": "Products.ProductName",
-            "fieldValue": [
-                "c%"
-            ]
-        },
-        {
-            "operator": "IN",
-            "fieldName": "Categories.CategoryName",
-            "fieldValue": [
-                "Beverages",
-                "Condiments"
-            ]
-        }
-    ],
+    "table_name": "student",
     "joinOperations": [
         {
-            "joinType": "inner join",
+            "joinType": "",
             "operator": "=",
-            "field1": "Categories.CategoryID",
-            "field2": "Products.ProductID",
-            "joinTableName": "Products"
+            "field1": "student.studentid",
+            "field2": "marks.studentid",
+            "joinTableName": "marks",
+            "joiners": []
+        }
+    ],
+    "operations": [
+        {
+            "operator": ">",
+            "fieldName": "marks.total_marks",
+            "fieldValue": [
+                {
+                    "type": "SELECT",
+                    "columns": [
+                        "total_marks"
+                    ],
+                    "table_name": "marks",
+                    "operations": [
+                        {
+                            "operator": "=",
+                            "fieldName": "studentid",
+                            "fieldValue": [
+                                "V002"
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
